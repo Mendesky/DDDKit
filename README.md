@@ -18,6 +18,14 @@ dependencies: [
 ]
 ```
 
+### import 
+```
+import DDDCore
+import EventSourcing
+import ESDBSupport
+```
+
+
 ### event
 ```
 struct TestAggregateRootCreated: DomainEvent {
