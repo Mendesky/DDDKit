@@ -33,6 +33,7 @@ let package = Package(
                 "CQRS",
                 "EventSourcing",
                 "ESDBSupport",
+                "JBEventBus",
                 .product(name: "Logging", package: "swift-log")
             ]
         ),
