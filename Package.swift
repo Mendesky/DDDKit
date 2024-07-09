@@ -59,6 +59,12 @@ let package = Package(
             ]
         ),
         .target(
+            name: "JBEventBus",
+            dependencies: [
+                "DDDCore",
+            ]
+        ),
+        .target(
             name: "TestUtility",
             dependencies: [
                 "DDDCore",
