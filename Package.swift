@@ -21,7 +21,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/gradyzhuo/EventStoreDB-Swift.git", from: "0.2.0"),
+        .package(url: "https://github.com/Mendesky/EventStoreDB-Swift.git", from: "0.2.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.5.4")
     ],
     targets: [
