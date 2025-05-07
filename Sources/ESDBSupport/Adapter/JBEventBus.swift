@@ -26,4 +26,9 @@ extension JBEventBus{
             try await publish(of: subscriber, event: event)
         }
     }
+    
+    public func postEvent(event: ReadEvent) async throws {
+        try await self.postEvent(event: event.record)
+    }
+
 }
