@@ -28,7 +28,7 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
             let encoder = JSONEncoder()
             return try EventData(id: $0.id, eventType: $0.eventType, model: $0, customMetadata: encoder.encode(customMetadata))
         }
-        let response = try await client.appendStream(on: .init(name: streamName), events: events){ options in
+        let response = try await client.appendStream(.init(name: streamName), events: events){ options in
             guard let version else {
                 return options.revision(expected: .any)
             }
@@ -44,7 +44,7 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
         let logger = Logger(label: "ESDBStorageCoordinator")
         let streamName = ProjectableType.getStreamName(id: id)
         do{
-            let responses = try await client.readStream(on: .init(name: streamName), startFrom: .start){ options in
+            let responses = try await client.readStream(.init(name: streamName), since: .start){ options in
                 options.resolveLinks()
             }
 
