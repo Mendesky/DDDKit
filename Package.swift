@@ -23,6 +23,9 @@ let package = Package(
             name: "DomainEventGenerator",
             targets: ["DomainEventGenerator"]
         ),
+        .library(
+            name: "MigrationUtility",
+            targets: ["MigrationUtility"]),
        .plugin(name: "DomainEventGeneratorPlugin", targets: [
            "DomainEventGeneratorPlugin"
            
@@ -78,15 +81,18 @@ let package = Package(
                 .product(name: "EventStoreDB", package: "kurrentdb-swift"),
             ]
         ),
-        .testTarget(
-            name: "DDDCoreTests",
-            dependencies: ["DDDKit", "TestUtility"]
-        ),
         .target(name: "DomainEventGenerator",
                 dependencies: [
                     .product(name: "Yams", package: "yams")
                 ]),
-        
+        .target(name: "MigrationUtility",
+                dependencies: [
+                    "DDDCore"
+                ]),
+        .testTarget(
+            name: "DDDCoreTests",
+            dependencies: ["DDDKit", "TestUtility"]
+        ),
         .executableTarget(name: "generate",
                           dependencies: [
                             "DomainEventGenerator",
