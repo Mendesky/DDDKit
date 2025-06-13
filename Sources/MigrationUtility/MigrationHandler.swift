@@ -20,3 +20,18 @@ extension MigrationHandler {
         try self.action(aggregateRoot, event, userInfo)
     }
 }
+
+
+public protocol CreatedEventHandler: Sendable {
+    associatedtype AggregateRootType: AggregateRoot
+    associatedtype EventType: DomainEvent
+    associatedtype UserInfoType: Sendable
+
+    var action: @Sendable (EventType, UserInfoType) throws -> AggregateRootType { get }
+}
+
+extension CreatedEventHandler {
+    func handle(event: EventType, userInfo: UserInfoType) throws -> AggregateRootType {
+        try self.action(event, userInfo)
+    }
+}

@@ -8,11 +8,19 @@ import DDDCore
 
 public class MigrationBuilder<MigrationType: Migration> {
 
+    public var createdHandler: (any CreatedEventHandler)?
     private var handlers: [any MigrationHandler]
     
     public init() {
         self.handlers = []
     }
+    
+    @discardableResult
+    public func `init`<T: DomainEvent>(eventType: T.Type, action: @escaping @Sendable (_ event: T, _ userInfo: MigrationType.UserInfoType?) throws -> MigrationType.AggregateRootType) rethrows ->Self{
+        self.createdHandler = CreatedEventTypeHandler(action: action)
+        return self
+    }
+    
     
     @discardableResult
     public func when<T: DomainEvent>(eventType: T.Type, action: @escaping @Sendable (_ aggregateRoot: MigrationType.AggregateRootType, _ event: T, _ userInfo: MigrationType.UserInfoType?) throws -> Void ) rethrows ->Self{
@@ -30,16 +38,23 @@ public class MigrationBuilder<MigrationType: Migration> {
 public protocol Migration: Sendable {
     associatedtype AggregateRootType: AggregateRoot
     associatedtype UserInfoType
+    associatedtype CreatedHandler: CreatedEventHandler
     
+    var createdHandler: CreatedHandler? { get }
     var handlers: [any MigrationHandler] { get }
     var userInfo: UserInfoType? { get }
     
-    init(handlers: [any MigrationHandler], userInfo: UserInfoType?)
+    init(createdHandler: (any CreatedEventHandler)?, handlers: [any MigrationHandler], userInfo: UserInfoType?)
 }
 
 extension Migration {
     
-    func migrate(events: [any DomainEvent]) throws -> AggregateRootType? {
+    public func migrate(events: [any DomainEvent]) throws -> AggregateRootType? {
+        
+        if let createdHandler, let createdEvent = events.first as? CreatedHandler.EventType {
+            createdHandler.handle(event: events.first, userInfo: userInfo)
+        }
+        
         guard let createdEvent = events.first as? AggregateRootType.CreatedEventType else {
             return nil
         }
