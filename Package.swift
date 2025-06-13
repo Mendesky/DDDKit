@@ -91,7 +91,7 @@ let package = Package(
                 ]),
         .testTarget(
             name: "DDDCoreTests",
-            dependencies: ["DDDKit", "TestUtility"]
+            dependencies: ["DDDKit", "TestUtility", "MigrationUtility"]
         ),
         .executableTarget(name: "generate",
                           dependencies: [

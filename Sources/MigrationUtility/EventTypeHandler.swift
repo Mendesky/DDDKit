@@ -13,3 +13,12 @@ public struct EventTypeHandler<EventType: DomainEvent, AggregateRootType: Aggreg
         self.action = action
     }
 }
+
+
+public struct CreatedEventTypeHandler<EventType: DomainEvent, AggregateRootType: AggregateRoot, UserInfoType>: CreatedEventHandler{
+    public var action: @Sendable (EventType, UserInfoType) throws -> AggregateRootType
+    
+    init(action: @escaping @Sendable (EventType, UserInfoType) throws -> AggregateRootType) {
+        self.action = action
+    }
+}

@@ -10,7 +10,15 @@ import XCTest
 struct TestAggregateRootCreated: DomainEvent {
     var id: UUID = .init()
     var occurred: Date = .now
+    var paymentId: String
     var aggregateRootId: String
+    
+    init(id: UUID = .init(), paymentId: String, occurred: Date = .now, aggregateRootId: String) {
+        self.id = id
+        self.occurred = occurred
+        self.paymentId = paymentId
+        self.aggregateRootId = aggregateRootId
+    }
 }
 
 struct TestAggregateRootDeleted: DeletedEvent {
@@ -40,7 +48,7 @@ class TestAggregateRoot: AggregateRoot {
     init(id: String) {
         self.id = id
 
-        let event = TestAggregateRootCreated(aggregateRootId: id)
+        let event = TestAggregateRootCreated(paymentId: "test payment id", aggregateRootId: id)
         try? apply(event: event)
     }
 
