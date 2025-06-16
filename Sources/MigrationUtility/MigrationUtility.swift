@@ -39,7 +39,7 @@ public protocol Migration: Sendable {
 
 extension Migration {
     
-    func migrate(events: [any DomainEvent]) throws -> AggregateRootType? {
+    public func migrate(events: [any DomainEvent]) throws -> AggregateRootType? {
         guard let createdEvent = events.first as? AggregateRootType.CreatedEventType else {
             return nil
         }
