@@ -6,7 +6,7 @@
 //
 import DDDCore
 
-public class MigrationBuilder<MigrationType: Migration> {
+public actor MigrationBuilder<MigrationType: Migration>: Sendable {
 
     private var handlers: [any MigrationHandler]
     
