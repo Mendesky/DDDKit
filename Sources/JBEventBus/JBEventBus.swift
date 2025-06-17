@@ -1,42 +1,23 @@
 import DDDCore
-
-package struct GeneralSubscriber<Event: DomainEvent>: EventSubscriber{
-    package let eventName: String
-    package let handle: @Sendable (Event) async throws -> Void
-}
+import Foundation
+import ESDBSupport
 
 public class JBEventBus: DomainEventBus {
-    public private(set) var eventSubscribers: [any EventSubscriber]
+    public private(set) var notificationCenter: NotificationCenter = .default
 
-    public func publish(event: some DomainEvent) async throws {
-        try await withThrowingDiscardingTaskGroup { group in
-            for eventSubscriber in eventSubscribers {
-                group.addTask { @MainActor in
-                    if eventSubscriber.eventName == event.eventType {
-                        try await self.publish(of: eventSubscriber, event: event)
-                    }
-                }
-            }
-        }
+    public func publish(event: some DomainEvent){
+        notificationCenter.post(name: .init(event.eventType), object: event)
     }
     
     package func publish<Subscriber: EventSubscriber>(of subscriber: Subscriber, event: some DomainEvent) async throws {
         guard let event = event as? Subscriber.Event else {
             return
         }
-        try await subscriber.handle(event)
-    }
-
-    public func subscribe<EventType: DomainEvent>(to eventType: EventType.Type, handler: @escaping (_ event: EventType) async throws -> Void) rethrows {
-        let eventTypeString = "\(eventType)"
         
-        let subscriber = GeneralSubscriber<EventType>(eventName: eventTypeString){ event async throws in
-            try await handler(event)
-        }
-        eventSubscribers.append(subscriber)
+        notificationCenter.post(name: .init(subscriber.eventName), object: event)
     }
 
     public init() {
-        eventSubscribers = []
+
     }
 }
