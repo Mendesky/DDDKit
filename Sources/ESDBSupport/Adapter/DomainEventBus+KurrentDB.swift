@@ -21,7 +21,7 @@ extension DomainEventBus{
     public func subscribe<EventType: DomainEvent>(to eventType: EventType.Type, handler: @escaping (_ event: EventType) -> Void) {
         let eventTypeString = "\(eventType)"
         
-        notificationCenter.addObserver(forName: .init(eventTypeString), object: nil, queue: .main) { notification in
+        notificationCenter.addObserver(forName: .init(eventTypeString), object: nil, queue: .current) { notification in
             do{
                 let event = try (notification.object as? RecordedEvent).map{
                     try $0.decode(to: EventType.self)
