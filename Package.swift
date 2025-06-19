@@ -69,6 +69,7 @@ let package = Package(
             name: "JBEventBus",
             dependencies: [
                 "DDDCore",
+                "ESDBSupport"
             ]
         ),
         .target(

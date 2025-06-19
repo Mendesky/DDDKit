@@ -5,7 +5,7 @@ public protocol DomainEventBus {
     var notificationCenter: NotificationCenter { get }
     
     func publish<EventType: DomainEvent>(event: EventType) async throws
-    func subscribe<EventType: DomainEvent>(to eventType: EventType.Type, handler: @escaping (_ event: EventType) -> Void)
+    func subscribe<EventType: DomainEvent>(to eventType: EventType.Type, handler: @escaping (_ event: EventType) -> Void) throws
 }
 
 extension DomainEventBus {
