@@ -17,11 +17,18 @@ package struct ProjectionModelGenerator {
             throw ProjectionModelGeneratorError.invalidCreatedEvent
         }
         let deletedEvent = aggregateEvents.getValidEvent(kind: .deletedEvent)
+    
+        let filteredDefinitions: [String: EventProjectionDefinition] = definitions.reduce(into: [:]) { partialResult, element in
+            let definition = element.value
+            guard definition.model != .aggregateRoot else {
+                return
+            }
+            let events = definition.events + [definition.createdEvent]
+            partialResult[element.key] = definition
+        }
         
-        let filteredDefinitions = definitions.filter{ $0.value.model != .aggregateRoot }
-        
-        let aggregateEventNames = aggregateEvents.events.filter{ $0.name != createdEvent.name && $0.name != deletedEvent?.name }.map(\.name)
-        
+        let aggregateEventNames = aggregateEvents.events.filter{ $0.name != createdEvent.name}.map(\.name)
+    
         let aggregateRootProjectionModel = EventProjectionDefinition(model: .aggregateRoot, createdEvent: createdEvent.name, deletedEvent: deletedEvent?.name, events: aggregateEventNames)
         
         self.definitions = filteredDefinitions.merging([(aggregateRootName, aggregateRootProjectionModel)]) { lhs, rhs in
@@ -58,7 +65,7 @@ package struct ProjectionModelGenerator {
             }
             
             lines.append("\(accessLevel.rawValue) protocol \(protocolName):\(definition.model.protocol) where \(whereExpression){")
-            
+                        
             for eventName in definition.events{
                 lines.append("   func when(event: \(eventName)) throws")
             }
