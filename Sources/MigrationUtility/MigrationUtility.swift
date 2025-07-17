@@ -21,6 +21,13 @@ public actor MigrationBuilder<MigrationType: Migration>: Sendable {
         return self
     }
     
+    @discardableResult
+    public func `else`(action: @escaping @Sendable (_ aggregateRoot: MigrationType.AggregateRootType, _ event: any DomainEvent, _ userInfo: MigrationType.UserInfoType?) throws -> Void ) rethrows ->Self{
+        let handler = EventTypeHandler<AnyDomainEvent, MigrationType.AggregateRootType, MigrationType.UserInfoType>(action: action)
+        self.handlers.append(handler)
+        return self
+    }
+    
     public func build(userInfo: MigrationType.UserInfoType) -> MigrationType{
         return MigrationType(handlers: handlers, userInfo: userInfo)
     }
