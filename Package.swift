@@ -91,6 +91,7 @@ let package = Package(
         .target(name: "MigrationUtility2",
                 dependencies: [
                     "DDDCore",
+                    "ESDBSupport",
                     .product(name: "KurrentDB", package: "kurrentdb-swift")
                 ]),
         .target(name: "DomainEventGenerator",
