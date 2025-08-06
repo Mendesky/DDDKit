@@ -25,7 +25,7 @@ public actor TestBundle {
         let streamIdentifier = StreamIdentifier(name: "\(category)-\(id)")
         self.streamIdentifiers.append(streamIdentifier)
         
-        if cleanPhase.containsBegin {
+        if cleanPhase.contains(.begin) {
             await self.clearStream(streamIdentifier: streamIdentifier)
         }
         
@@ -52,29 +52,22 @@ public actor TestBundle {
 }
 
 extension TestBundle {
-    public enum CleanPhase{
-        case none
-        case begin
-        case end
-        case both
-        
-        fileprivate var containsBegin: Bool {
-            switch self {
-            case .none, .end:
-                return false
-            case .begin, .both:
-                return true
-            }
+    public struct CleanPhase: OptionSet{
+        public init(rawValue: UInt8) {
+            self.rawValue = rawValue
         }
         
-        fileprivate var containsEnd: Bool {
-            switch self {
-            case .end, .both:
-                return true
-            case .none, .begin:
-                return false
-            }
-        }
+        public var rawValue: UInt8
+        
+        public typealias RawValue = UInt8
+        
+        public static let begin: CleanPhase = .init(rawValue: 1 << 0)
+        public static let end: CleanPhase   = .init(rawValue: 1 << 1)
+        
+        
+        public static let none: CleanPhase  = []
+        public static let both: CleanPhase  = [.begin, .end]
+
     }
 }
 
@@ -87,7 +80,7 @@ public func withTestBundle(client: KurrentDBClient, cleanPhase: TestBundle.Clean
         print("Test failed with error: \(error)")
     }
     
-    if cleanPhase.containsEnd {
+    if cleanPhase.contains(.end) {
         await bundle.clearStreams()
     }
 }
