@@ -21,14 +21,13 @@ public actor TestBundle {
     }
     
     public func generateAggregateRootId(for category: String, prefix: String = "testing") async -> String {
-        let id = UUID().uuidString
-        let streamIdentifier = StreamIdentifier(name: "\(category)-\(prefix)\(id)")
+        let id = "\(prefix)\(UUID().uuidString)"
+        let streamIdentifier = StreamIdentifier(name: "\(category)-\(id)")
         self.streamIdentifiers.append(streamIdentifier)
         
         if cleanPhase.contains(.begin) {
             await self.clearStream(streamIdentifier: streamIdentifier)
         }
-        
         return id
     }
     
