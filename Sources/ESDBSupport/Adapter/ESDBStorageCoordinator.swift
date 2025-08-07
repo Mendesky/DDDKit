@@ -5,6 +5,7 @@ import Foundation
 import Logging
 
 public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageCoordinator {
+    let logger = Logger(label: "ESDBStorageCoordinator")
     let eventMapper: any EventTypeMapper
     let client: KurrentDBClient
 
@@ -41,7 +42,7 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
     }
 
     public func fetchEvents(byId id: ProjectableType.ID) async throws -> (events: [any DomainEvent], latestRevision: UInt64)? {
-        let logger = Logger(label: "ESDBStorageCoordinator")
+        
         let streamName = ProjectableType.getStreamName(id: id)
         do{
             let responses = try await client.readStream(.init(name: streamName)){
@@ -50,10 +51,15 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
             }
 
             let eventWrappers: [(event: any DomainEvent, revision: UInt64)] = try await responses.reduce(into: .init()) {
-                guard let event = try self.eventMapper.mapping(eventData: $1.event.record) else {
-                    return
+                do{
+                    let recordedEvent = try $1.event.record
+                    guard let event = try self.eventMapper.mapping(eventData: recordedEvent) else {
+                        return
+                    }
+                    $0.append((event: event, revision: recordedEvent.revision))
+                }catch {
+                    logger.warning("skipped event cause error happened. error: \(error)")
                 }
-                try $0.append((event: event, revision: $1.event.record.revision))
             }
             
             guard let latestRevision = eventWrappers.last?.revision else {
