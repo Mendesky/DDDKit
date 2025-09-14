@@ -17,8 +17,13 @@ public protocol MigrationHandler: Sendable {
 }
 
 extension MigrationHandler {
-    func decode(recordedEvent: RecordedEvent) throws -> EventType?{
-        try recordedEvent.decode(to: EventType.self)
+    func decode(recordedEvent: RecordedEvent) -> EventType?{
+        do{
+            return try recordedEvent.decode(to: EventType.self)
+        }catch{
+            print("[\(recordedEvent.eventType)] ignore event decoded error: \(error.localizedDescription)")
+            return nil
+        }
     }
     
     func handle(aggregateRoot: AggregateRootType, event: any DomainEvent, userInfo: UserInfoType) throws {
@@ -29,10 +34,3 @@ extension MigrationHandler {
     }
 }
 
-public protocol CreatedMigrationHandler: Sendable {
-    associatedtype AggregateRootType: AggregateRoot
-    associatedtype EventType: DomainEvent
-    associatedtype UserInfoType: Sendable
-
-    var action: @Sendable (EventType, UserInfoType) throws -> AggregateRootType? { get }
-}

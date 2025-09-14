@@ -10,62 +10,20 @@ import ESDBSupport
 import KurrentDB
 import Foundation
 
-public actor MigrationBuilder<MigrationType: Migration>: Sendable {
-
-    private var createdHandler: (any CreatedMigrationHandler)?
-    private var handlers: [any MigrationHandler]
-    
-    public init() {
-        self.handlers = []
-    }
-    
-    @discardableResult
-    public func `init`<T: DomainEvent>(created eventType: T.Type, action: @escaping @Sendable (_ event: T, _ userInfo: MigrationType.UserInfoType?) throws -> MigrationType.AggregateRootType ) rethrows ->Self{
-        let handler = CreatedEventMigrater<T, MigrationType.AggregateRootType, MigrationType.UserInfoType>(action: action)
-        self.createdHandler = handler
-        return self
-    }
-    
-    @discardableResult
-    public func when<T: DomainEvent>(eventType: T.Type, action: @escaping @Sendable (_ aggregateRoot: MigrationType.AggregateRootType, _ event: T, _ userInfo: MigrationType.UserInfoType?) throws -> Void ) rethrows ->Self{
-        let handler = EventTypeHandler<T, MigrationType.AggregateRootType, MigrationType.UserInfoType>(action: action)
-        self.handlers.append(handler)
-        return self
-    }
-    
-    @discardableResult
-    public func `else`(action: @escaping @Sendable (_ aggregateRoot: MigrationType.AggregateRootType, _ event: any DomainEvent, _ userInfo: MigrationType.UserInfoType?) throws -> Void ) rethrows ->Self{
-        let handler = EventTypeHandler<AnyDomainEvent, MigrationType.AggregateRootType, MigrationType.UserInfoType>(action: action)
-        self.handlers.append(handler)
-        return self
-    }
-    
-    public func build(eventMapper: EventTypeMapper, userInfo: MigrationType.UserInfoType) -> MigrationType{
-        return MigrationType(eventMapper: eventMapper, handlers: handlers, userInfo: userInfo)
-    }
-}
-
-
-
-public final class OverlookCreatedMigrationHandler<AggregateRootType: AggregateRoot, UserInfoType: Sendable> : CreatedMigrationHandler {
-    public let action: @Sendable (AggregateRootType.CreatedEventType, UserInfoType) throws -> AggregateRootType?
-    
-    public init() {
-        self.action = { _, _ in nil }
-    }
-}
-
 public protocol Migration: Sendable {
+    associatedtype CreatedEvent: DomainEvent
     associatedtype AggregateRootType: AggregateRoot
     associatedtype UserInfoType
-    associatedtype CreatedHandler: CreatedMigrationHandler where CreatedHandler.AggregateRootType == AggregateRootType, CreatedHandler.UserInfoType == UserInfoType
+    typealias CreatedHandler = @Sendable (_ createdEvent: CreatedEvent, _ userInfo: UserInfoType?) throws -> AggregateRootType?
+//    associatedtype CreatedHandler: CreatedMigrationHandler where CreatedHandler.AggregateRootType == AggregateRootType, CreatedHandler.UserInfoType == UserInfoType
     
     var eventMapper: EventTypeMapper { get }
-    var createdHandler: CreatedHandler { get }
+//    var createdHandler: CreatedHandler? { get }
+    var createdHandler: CreatedHandler? { get }
     var handlers: [any MigrationHandler] { get }
     var userInfo: UserInfoType? { get }
     
-    init(eventMapper: EventTypeMapper, handlers: [any MigrationHandler], userInfo: UserInfoType?)
+    init(eventMapper: EventTypeMapper, handlers: [any MigrationHandler], createdHandler: CreatedHandler?, userInfo: UserInfoType?)
 }
 
 extension Migration {
@@ -84,8 +42,9 @@ extension Migration {
         
         for record in records {
             var handled: Bool = false
+                    
             for handler in self.handlers {
-                guard let event = try handler.decode(recordedEvent: record)  else {
+                guard let event = handler.decode(recordedEvent: record)  else {
                     continue
                 }
                 let result = try handleEvent(aggregateRoot: aggregateRoot, handler: handler, event: event)
@@ -106,21 +65,19 @@ extension Migration {
     }
     
     public func initAggregateRoot(recorded: RecordedEvent) throws -> AggregateRootType? {
-        guard let oldEvent = try recorded.decode(to: CreatedHandler.EventType.self) else {
+        guard let oldEvent = try recorded.decode(to: CreatedEvent.self) else {
             return nil
         }
         
         guard let userInfo else {
             return nil
         }
-        return try createdHandler.action(oldEvent, userInfo)
-    }
-    
-    public func initAggregateRoot(recorded: RecordedEvent) throws -> AggregateRootType? where CreatedHandler == OverlookCreatedMigrationHandler<AggregateRootType, UserInfoType>{
-        guard let createdEvent = try eventMapper.mapping(eventData: recorded) as? AggregateRootType.CreatedEventType else {
-            return nil
+        
+        let createdHandler = self.createdHandler ?? { createdEvent, userInfo in
+            return try .init(events: [createdEvent])
         }
-        return try .init(first: createdEvent, other: [])
+
+        return try createdHandler(oldEvent, userInfo)
     }
     
     func handleEvent<Handler: MigrationHandler>(aggregateRoot: AggregateRootType, handler: Handler, event: any DomainEvent) throws -> Bool {

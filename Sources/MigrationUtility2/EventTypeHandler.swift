@@ -27,12 +27,3 @@ extension EventTypeHandler where EventType == AnyDomainEvent {
         self.action = action
     }
 }
-
-
-public struct CreatedEventMigrater<EventType: DomainEvent, AggregateRootType: AggregateRoot, UserInfoType>: CreatedMigrationHandler{
-    public var action: @Sendable (EventType, UserInfoType) throws -> AggregateRootType?
-    
-    init(action: @escaping @Sendable (EventType, UserInfoType) throws -> AggregateRootType) {
-        self.action = action
-    }
-}
