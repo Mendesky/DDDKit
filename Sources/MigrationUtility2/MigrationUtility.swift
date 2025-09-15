@@ -27,6 +27,13 @@ public protocol Migration: Sendable {
 }
 
 extension Migration {
+    public func migrate(responses: Streams<SpecifiedStream>.Read.Responses) async throws -> AggregateRootType?{
+        let records = try await responses.reduce(into: [RecordedEvent]()) { partialResult, response in
+            let record = try response.event.record
+            partialResult.append(record)
+        }
+        return try migrate(records: records)
+    }
     
     public func migrate(records: [RecordedEvent]) throws -> AggregateRootType? {
         
