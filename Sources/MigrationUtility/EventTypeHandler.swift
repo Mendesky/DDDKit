@@ -6,6 +6,7 @@
 //
 import DDDCore
 import Foundation
+import KurrentDB
 
 struct AnyDomainEvent: DomainEvent {
     var aggregateRootId: String = ""
@@ -26,5 +27,3 @@ extension EventTypeHandler where EventType == AnyDomainEvent {
         self.action = action
     }
 }
-
-

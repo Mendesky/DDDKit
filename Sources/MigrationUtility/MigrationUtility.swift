@@ -5,81 +5,86 @@
 //  Created by Grady Zhuo on 2025/6/6.
 //
 import DDDCore
-
-public actor MigrationBuilder<MigrationType: Migration>: Sendable {
-
-    private var handlers: [any MigrationHandler]
-    
-    public init() {
-        self.handlers = []
-    }
-    
-    @discardableResult
-    public func when<T: DomainEvent>(eventType: T.Type, action: @escaping @Sendable (_ aggregateRoot: MigrationType.AggregateRootType, _ event: T, _ userInfo: MigrationType.UserInfoType?) throws -> Void ) rethrows ->Self{
-        let handler = EventTypeHandler<T, MigrationType.AggregateRootType, MigrationType.UserInfoType>(action: action)
-        self.handlers.append(handler)
-        return self
-    }
-    
-    @discardableResult
-    public func `else`(action: @escaping @Sendable (_ aggregateRoot: MigrationType.AggregateRootType, _ event: any DomainEvent, _ userInfo: MigrationType.UserInfoType?) throws -> Void ) rethrows ->Self{
-        let handler = EventTypeHandler<AnyDomainEvent, MigrationType.AggregateRootType, MigrationType.UserInfoType>(action: action)
-        self.handlers.append(handler)
-        return self
-    }
-    
-    public func build(userInfo: MigrationType.UserInfoType) -> MigrationType{
-        return MigrationType(handlers: handlers, userInfo: userInfo)
-    }
-}
-
+import EventSourcing
+import ESDBSupport
+import KurrentDB
+import Foundation
 
 public protocol Migration: Sendable {
+    associatedtype CreatedEvent: DomainEvent
     associatedtype AggregateRootType: AggregateRoot
     associatedtype UserInfoType
+    typealias CreatedHandler = @Sendable (_ createdEvent: CreatedEvent, _ userInfo: UserInfoType?) throws -> AggregateRootType?
+//    associatedtype CreatedHandler: CreatedMigrationHandler where CreatedHandler.AggregateRootType == AggregateRootType, CreatedHandler.UserInfoType == UserInfoType
     
+    var eventMapper: EventTypeMapper { get }
+//    var createdHandler: CreatedHandler? { get }
+    var createdHandler: CreatedHandler? { get }
     var handlers: [any MigrationHandler] { get }
     var userInfo: UserInfoType? { get }
     
-    init(handlers: [any MigrationHandler], userInfo: UserInfoType?)
+    init(eventMapper: EventTypeMapper, handlers: [any MigrationHandler], createdHandler: CreatedHandler?, userInfo: UserInfoType?)
 }
 
 extension Migration {
+    public func migrate(responses: Streams<SpecifiedStream>.Read.Responses) async throws -> AggregateRootType?{
+        let records = try await responses.reduce(into: [RecordedEvent]()) { partialResult, response in
+            let record = try response.event.record
+            partialResult.append(record)
+        }
+        return try migrate(records: records)
+    }
     
-    public func migrate(events: [any DomainEvent]) throws -> AggregateRootType? {
-        guard let createdEvent = events.first as? AggregateRootType.CreatedEventType else {
+    public func migrate(records: [RecordedEvent]) throws -> AggregateRootType? {
+        
+        guard let createdRecordedEvent = records.first else {
             return nil
         }
         
-        guard let aggregateRoot = try AggregateRootType(first: createdEvent, other: []) else {
+        guard let aggregateRoot = try initAggregateRoot(recorded: createdRecordedEvent) else {
             return nil
         }
         
-        try aggregateRoot.add(domainEvent: createdEvent)
+        let records = records.dropFirst()
         
-        for event in events.filter({ $0.eventType != "\(AggregateRootType.CreatedEventType.self)" }) {
-            var result: Bool = false
-            for handler in handlers {
-                let r = try handleEvent(aggregateRoot: aggregateRoot, handler: handler, event: event)
-                if r {
-                    result = r
+        for record in records {
+            var handled: Bool = false
+                    
+            for handler in self.handlers {
+                guard let event = handler.decode(recordedEvent: record)  else {
+                    continue
+                }
+                let result = try handleEvent(aggregateRoot: aggregateRoot, handler: handler, event: event)
+                if result {
+                    handled = result
                     break
                 }
             }
             
-            if !result {
-                do{
-                    try aggregateRoot.apply(event: event)
-                }catch{
-                    throw MigrationError.apply(error: error, event: event)
+            if !handled {
+                guard let event = try eventMapper.mapping(eventData: record) else {
+                    break
                 }
-                
-                
+                try aggregateRoot.apply(event: event)
             }
-            
+        }
+        return aggregateRoot
+    }
+    
+    public func initAggregateRoot(recorded: RecordedEvent) throws -> AggregateRootType? {
+        guard let oldEvent = try recorded.decode(to: CreatedEvent.self) else {
+            return nil
         }
         
-        return aggregateRoot
+        guard let userInfo else {
+            return nil
+        }
+        
+        let createdHandler = self.createdHandler ?? { createdEvent, userInfo in
+            return try .init(events: [createdEvent])
+        }
+
+        return try createdHandler(oldEvent, userInfo)
     }
     
     func handleEvent<Handler: MigrationHandler>(aggregateRoot: AggregateRootType, handler: Handler, event: any DomainEvent) throws -> Bool {
@@ -102,4 +107,6 @@ extension Migration {
         
         return true
     }
+    
+    
 }
