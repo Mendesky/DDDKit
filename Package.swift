@@ -26,9 +26,6 @@ let package = Package(
         .library(
             name: "MigrationUtility",
             targets: ["MigrationUtility"]),
-        .library(
-            name: "MigrationUtility2",
-            targets: ["MigrationUtility2"]),
        .plugin(name: "DomainEventGeneratorPlugin", targets: [
            "DomainEventGeneratorPlugin"
            
@@ -85,10 +82,6 @@ let package = Package(
             ]
         ),
         .target(name: "MigrationUtility",
-                dependencies: [
-                    "DDDCore"
-                ]),
-        .target(name: "MigrationUtility2",
                 dependencies: [
                     "DDDCore",
                     "ESDBSupport",
