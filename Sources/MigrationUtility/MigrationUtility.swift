@@ -15,10 +15,8 @@ public protocol Migration: Sendable {
     associatedtype AggregateRootType: AggregateRoot
     associatedtype UserInfoType
     typealias CreatedHandler = @Sendable (_ createdEvent: CreatedEvent, _ userInfo: UserInfoType?) throws -> AggregateRootType?
-//    associatedtype CreatedHandler: CreatedMigrationHandler where CreatedHandler.AggregateRootType == AggregateRootType, CreatedHandler.UserInfoType == UserInfoType
     
     var eventMapper: EventTypeMapper { get }
-//    var createdHandler: CreatedHandler? { get }
     var createdHandler: CreatedHandler? { get }
     var handlers: [any MigrationHandler] { get }
     var userInfo: UserInfoType? { get }
