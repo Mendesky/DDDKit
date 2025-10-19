@@ -1,6 +1,6 @@
 import DDDCore
 import EventSourcing
-import EventStoreDB
+import KurrentDB
 import Foundation
 import Logging
 
@@ -12,11 +12,6 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
     public init(client: KurrentDBClient, eventMapper: any EventTypeMapper) {
         self.eventMapper = eventMapper
         self.client = client
-    }
-    
-    public init(client: EventStoreDBClient, eventMapper: any EventTypeMapper) {
-        self.eventMapper = eventMapper
-        self.client = client.underlyingClient
     }
 
     public func append(events: [any DDDCore.DomainEvent], byId id: ProjectableType.ID, version: UInt64?, external: [String:String]?) async throws -> UInt64? {
@@ -33,7 +28,7 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
             guard let version else {
                 return options.revision(expected: .any)
             }
-            return options.revision(expected: .revision(UInt64(version)))
+            return options.revision(expected: .at(UInt64(version)))
         }
 
         return response.currentRevision.flatMap {

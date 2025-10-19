@@ -104,8 +104,5 @@ let package = Package(
             "generate"
           ]),
         
-    ],
-    swiftLanguageModes: [
-        .v5
     ]
 )
