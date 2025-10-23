@@ -55,6 +55,8 @@ let package = Package(
                 "DDDCore",
             ]),
         .target(
+            name: "ReadModel"),
+        .target(
             name: "ESDBSupport",
             dependencies: [
                 "DDDCore",
