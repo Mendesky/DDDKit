@@ -15,6 +15,9 @@ let package = Package(
             name: "DDDKit",
             targets: ["DDDKit"]),
         .library(
+            name: "ReadModel",
+            targets: ["ReadModel"]),
+        .library(
             name: "TestUtility",
             targets: ["TestUtility"]),
         .library(
