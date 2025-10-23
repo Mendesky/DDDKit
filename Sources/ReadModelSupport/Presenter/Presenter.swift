@@ -1,4 +1,5 @@
 import Foundation
+import DDDCore
 
 public protocol Presenter {
     associatedtype ReadModelType: ReadModel

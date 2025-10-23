@@ -15,8 +15,8 @@ let package = Package(
             name: "DDDKit",
             targets: ["DDDKit"]),
         .library(
-            name: "ReadModel",
-            targets: ["ReadModel"]),
+            name: "ReadModelSupport",
+            targets: ["ReadModelSupport"]),
         .library(
             name: "TestUtility",
             targets: ["TestUtility"]),
@@ -58,7 +58,7 @@ let package = Package(
                 "DDDCore",
             ]),
         .target(
-            name: "ReadModel"),
+            name: "ReadModelSupport"),
         .target(
             name: "ESDBSupport",
             dependencies: [
