@@ -3,7 +3,7 @@ public protocol ReadModel: Projectable, Codable {
     associatedtype CreatedEventType: DomainEvent
 
     init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) throws
-    func when(happened event: any DomainEvent) throws
+    func when(happened event: some DomainEvent) throws
 }
 
 extension ReadModel {
