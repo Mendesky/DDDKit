@@ -20,7 +20,7 @@ extension EventSourcingProjector {
             return nil
         }
         
-        let projectable = try ProjectableType(events: fetechedEvents.events)
+        let projectable = try await ProjectableType(events: fetechedEvents.events)
         return projectable
     }
 }
