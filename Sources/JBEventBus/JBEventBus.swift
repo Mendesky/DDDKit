@@ -5,8 +5,10 @@ package struct GeneralSubscriber<Event: DomainEvent>: EventSubscriber{
     package let handle: @Sendable (Event) async throws -> Void
 }
 
-public class JBEventBus: DomainEventBus {
-    public private(set) var eventSubscribers: [any EventSubscriber]
+public actor JBEventBus: @preconcurrency DomainEventBus {
+    public typealias Subscriber = any EventSubscriber  // 指定 associatedtype
+
+    public var eventSubscribers: [any EventSubscriber]
 
     public func publish(event: some DomainEvent) async throws {
         for eventSubscriber in eventSubscribers {
@@ -23,13 +25,13 @@ public class JBEventBus: DomainEventBus {
         try await subscriber.handle(event)
     }
 
-    public func subscribe<EventType: DomainEvent>(to eventType: EventType.Type, handler: @escaping (_ event: EventType) async throws -> Void) rethrows {
+    public func subscribe<EventType: DomainEvent>(to eventType: EventType.Type, handler: @escaping @Sendable (_ event: EventType) async throws -> Void) async rethrows {
         let eventTypeString = "\(eventType)"
         
         let subscriber = GeneralSubscriber<EventType>(eventName: eventTypeString){ event async throws in
             try await handler(event)
         }
-        eventSubscribers.append(subscriber)
+        await eventSubscribers.append(subscriber)
     }
 
     public init() {

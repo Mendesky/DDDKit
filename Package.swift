@@ -15,9 +15,6 @@ let package = Package(
             name: "DDDKit",
             targets: ["DDDKit"]),
         .library(
-            name: "ReadModelSupport",
-            targets: ["ReadModelSupport"]),
-        .library(
             name: "TestUtility",
             targets: ["TestUtility"]),
         .library(
@@ -58,8 +55,6 @@ let package = Package(
                 "DDDCore",
             ]),
         .target(
-            name: "ReadModelSupport"),
-        .target(
             name: "ESDBSupport",
             dependencies: [
                 "DDDCore",
@@ -87,6 +82,11 @@ let package = Package(
             name: "DDDCoreTests",
             dependencies: ["DDDKit", "TestUtility"]
         ),
+        
+            .testTarget(
+                name: "EventSourcingTests",
+                dependencies: ["DDDKit", "EventSourcing", "TestUtility"]
+            ),
         .target(name: "DomainEventGenerator",
                 dependencies: [
                     .product(name: "Yams", package: "yams")

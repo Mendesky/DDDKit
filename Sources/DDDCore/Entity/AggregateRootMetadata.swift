@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class AggregateRootMetadata {
+public actor AggregateRootMetadata {
     var events: [any DomainEvent] = []
 
     public package(set) var deleted: Bool
@@ -20,5 +20,18 @@ public final class AggregateRootMetadata {
     
     public func delete() {
         self.deleted = true
+    }
+    
+    public func update(version: UInt64){
+        self.version = version
+    }
+    
+
+    public func apppend(event: any DomainEvent){
+        self.events.append(event)
+    }
+    
+    public func removeAll(){
+        self.events.removeAll()
     }
 }

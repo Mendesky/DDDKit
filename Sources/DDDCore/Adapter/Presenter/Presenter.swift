@@ -1,8 +1,8 @@
 import Foundation
 
-public protocol Presenter<I, O> {
-    associatedtype I: PresenterInput
-    associatedtype O: PresenterOutput
-
-    func buildReadModel(input: I) async throws -> O
+@available(*, deprecated, message: "Using EvnetSourcingPresenter insteads.")
+public protocol Presenter: Projectable {
+    associatedtype ReadModelType: ReadModel
+    
+    func buildReadModel(events: [any DomainEvent]) async throws -> PresenterOutput<ReadModelType>
 }

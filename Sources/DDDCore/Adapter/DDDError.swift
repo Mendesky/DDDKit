@@ -25,6 +25,7 @@ extension DDDError {
         case usecaseExecutionFailure = 101
         case aggregateNotFound = 201
         case aggregateOperationNotAllowed = 202
+        case eventsNotFound = 401
     }
 }
 
@@ -46,6 +47,16 @@ extension DDDError {
     
     public static func operationNotAllow(operation: String, reason: String, userInfos: [String: Any]? = nil) -> Self {
         let errorCode = DDDError.Code.aggregateOperationNotAllowed
+        let message = "[\(errorCode)] `\(operation)` not allowed, because \(reason)."
+        var userInfos = userInfos ?? [:]
+        userInfos["operation"] = operation
+        userInfos["reason"] = reason
+        return .init(code: errorCode, message: message, userInfos: userInfos)
+    }
+    
+    public static func eventsNotFoundInPresenter(operation: String, presenterType: String, userInfos: [String: Any]? = nil) -> Self {
+        let errorCode = DDDError.Code.eventsNotFound
+        let reason = "events not found to build readModel in presenter \(presenterType)"
         let message = "[\(errorCode)] `\(operation)` not allowed, because \(reason)."
         var userInfos = userInfos ?? [:]
         userInfos["operation"] = operation

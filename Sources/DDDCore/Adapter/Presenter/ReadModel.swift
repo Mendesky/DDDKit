@@ -1,7 +1,9 @@
+@available(*, deprecated, message: "Using EvnetSourcingPresenter.ReadModel insteads.")
 public protocol ReadModel: Projectable, Codable {
     associatedtype CreatedEventType: DomainEvent
 
     init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) throws
+    func when(happened event: any DomainEvent) throws
 }
 
 extension ReadModel {

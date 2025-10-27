@@ -4,7 +4,7 @@ import KurrentDB
 import Foundation
 import Logging
 
-public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageCoordinator {
+public final class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageCoordinator {
     let logger = Logger(label: "ESDBStorageCoordinator")
     let eventMapper: any EventTypeMapper
     let client: KurrentDBClient
