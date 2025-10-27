@@ -1,6 +1,6 @@
 @available(*, deprecated, message: "Using EvnetSourcingProjector insteads.")
 public protocol Projector: AnyObject {
-    associatedtype PresenterType: Presenter
+    associatedtype ProjectableType: Projectable
 
-    func find(byId id: String) async throws -> PresenterType.ReadModelType?
+    func find(byId id: ProjectableType.ID) async throws -> ProjectableType?
 }
