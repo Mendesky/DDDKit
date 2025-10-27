@@ -3,7 +3,8 @@ import DDDCore
 
 
 
-public protocol EventSourcingPresenter: Actor, Projectable where ID == String {
+public protocol EventSourcingPresenter: Actor where ID == String {
+    associatedtype ID: Hashable
     associatedtype ReadModel: Codable, Sendable
 
     var readModel: ReadModel? { get }

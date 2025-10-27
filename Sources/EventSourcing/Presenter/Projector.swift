@@ -1,13 +1,13 @@
 import DDDCore
 
-public protocol EventSourcingProjector<StorageCoordinator>: Actor, Sendable {
+public protocol EventStorageProjector<StorageCoordinator>: Actor, Sendable {
     associatedtype PresenterType: EventSourcingPresenter
     associatedtype StorageCoordinator: EventStorageCoordinator<PresenterType>
 
     var coordinator: StorageCoordinator { get }
 }
 
-extension EventSourcingProjector {
+extension EventStorageProjector {
 
     public func find(byId id: PresenterType.ID) async throws -> PresenterType.ReadModel? {
         guard let fetechedEvents = try await coordinator.fetchEvents(byId: id) else {

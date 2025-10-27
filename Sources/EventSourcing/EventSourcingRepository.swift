@@ -32,7 +32,7 @@ extension EventSourcingRepository {
         } as? AggregateRootType.DeletedEventType
 
         //濾掉 AggregateRootType 是 AggregateRootType.DeletedEventType 的 Event
-        let aggregateRoot = try AggregateRootType(events: events.filter{ !($0 is AggregateRootType.DeletedEventType) })
+        let aggregateRoot = try await AggregateRootType(events: events.filter{ !($0 is AggregateRootType.DeletedEventType) })
 
         if let deletedEvent {
             try await aggregateRoot?.apply(event: deletedEvent)

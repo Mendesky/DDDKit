@@ -6,7 +6,6 @@ public protocol AggregateRoot: Actor, Projectable, Entity{
 
     var metadata: AggregateRootMetadata { set get }
 
-    init?(events: [any DomainEvent]) async throws
     init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) async throws
 
     func add(domainEvent: some DomainEvent) throws
