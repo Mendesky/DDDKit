@@ -7,7 +7,7 @@ public protocol EventSourcingRepository<StorageCoordinator>: Repository {
     var coordinator: StorageCoordinator { get }
     
     func find(byId id: AggregateRootType.ID) async throws -> AggregateRootType?
-    func save(aggregateRoot: AggregateRootType, external: [String:String]?) async throws
+    func save(aggregateRoot: inout AggregateRootType, external: [String:String]?) async throws
 }
 
 extension EventSourcingRepository {
@@ -45,8 +45,7 @@ extension EventSourcingRepository {
         return aggregateRoot
     }
 
-    public func save(aggregateRoot: consuming AggregateRootType, external: [String:String]?) async throws {
-        var aggregateRoot = aggregateRoot
+    public func save(aggregateRoot: inout AggregateRootType, external: [String:String]?) async throws {
         let latestRevision: UInt64? = try await coordinator.append(events: aggregateRoot.events, byId: aggregateRoot.id, version: aggregateRoot.version, external: external)
         if let latestRevision {
             aggregateRoot.update(version: latestRevision)
