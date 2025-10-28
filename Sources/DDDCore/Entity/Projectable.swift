@@ -6,7 +6,7 @@ public protocol Projectable {
     
     var id: ID { get }
     init?(events: [any DomainEvent]) async throws
-    func when(happened event: some DomainEvent) throws
+    mutating func when(happened event: some DomainEvent) throws
 }
 
 extension Projectable {
