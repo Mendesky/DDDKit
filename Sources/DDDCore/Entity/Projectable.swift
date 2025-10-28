@@ -1,6 +1,6 @@
 public protocol Projectable: Sendable {
 
-    associatedtype ID: Hashable
+    associatedtype ID: Hashable & Sendable
     
     static var category: String { get }
     
