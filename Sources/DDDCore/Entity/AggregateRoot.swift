@@ -1,12 +1,12 @@
 import Foundation
 
-public protocol AggregateRoot: Actor, Projectable, Entity{
+public protocol AggregateRoot: Projectable, Entity{
     associatedtype CreatedEventType: DomainEvent
     associatedtype DeletedEventType: DeletedEvent
 
     var metadata: AggregateRootMetadata { set get }
 
-    init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) async throws
+    init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) throws
 
     func add(domainEvent: some DomainEvent) throws
     func when(happened event: some DomainEvent) throws
@@ -14,13 +14,13 @@ public protocol AggregateRoot: Actor, Projectable, Entity{
 }
 
 extension AggregateRoot {
-    public init?(events: [any DomainEvent]) async throws {
+    public init?(events: [any DomainEvent]) throws {
         var events = events
         guard let createdEvent = events.removeFirst() as? CreatedEventType else {
             return nil
         }
 
-        try await self.init(first: createdEvent, other: events)
+        try self.init(first: createdEvent, other: events)
     }
     
     public var deleted: Bool {
@@ -58,15 +58,15 @@ extension AggregateRoot {
         }
     }
 
-    public func add(domainEvent: some DomainEvent) throws {
+    public mutating func add(domainEvent: some DomainEvent) throws {
         metadata.events.append(domainEvent)
     }
     
-    public func update(version: UInt64){
+    public mutating func update(version: UInt64){
         metadata.version = version
     }
 
-    public func clearAllDomainEvents() throws {
+    public mutating func clearAllDomainEvents() throws {
         metadata.events.removeAll()
     }
 

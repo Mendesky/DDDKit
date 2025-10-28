@@ -64,7 +64,7 @@ extension Migration {
                 guard let event = try eventMapper.mapping(eventData: record) else {
                     break
                 }
-                try await aggregateRoot.apply(event: event)
+                try aggregateRoot.apply(event: event)
             }
         }
         return aggregateRoot
