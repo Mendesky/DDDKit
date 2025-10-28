@@ -7,8 +7,8 @@
 
 import Foundation
 
-public protocol Entity: ~Copyable {
-    associatedtype ID: Hashable
+public protocol Entity: ~Copyable, Sendable {
+    associatedtype ID: Hashable, Sendable
     
     var id: ID { get }
 }

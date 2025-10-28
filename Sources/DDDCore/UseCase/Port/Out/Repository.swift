@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol Repository: AnyObject, Sendable {
+public protocol Repository: Actor {
     associatedtype AggregateRootType: AggregateRoot
     
 }
