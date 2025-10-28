@@ -9,7 +9,7 @@ public protocol AggregateRoot: Projectable, Entity{
     init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) throws
 
     mutating func add(domainEvent: some DomainEvent) throws
-    func when(happened event: some DomainEvent) throws
+    mutating func when(happened event: some DomainEvent) throws
     func ensureInvariant() throws
 }
 
