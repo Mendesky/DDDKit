@@ -5,10 +5,8 @@ package struct GeneralSubscriber<Event: DomainEvent>: EventSubscriber{
     package let handle: @Sendable (Event) async throws -> Void
 }
 
-public actor JBEventBus: @preconcurrency DomainEventBus {
-    public typealias Subscriber = any EventSubscriber  // 指定 associatedtype
-
-    public var eventSubscribers: [any EventSubscriber]
+public actor JBEventBus: DomainEventBus {
+    public private(set) var eventSubscribers: [any EventSubscriber]
 
     public func publish(event: some DomainEvent) async throws {
         for eventSubscriber in eventSubscribers {

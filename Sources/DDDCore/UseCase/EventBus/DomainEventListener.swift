@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol DomainEventListener: Sendable {
+public protocol DomainEventListener: Actor {
     associatedtype EventType: DomainEvent
 
     func observed(event: EventType) async throws

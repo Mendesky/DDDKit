@@ -1,7 +1,7 @@
 import Foundation
 
-public protocol DomainEventBus: Sendable {
-    associatedtype Subscriber: Sendable
+public protocol DomainEventBus: Actor {
+    associatedtype Subscriber
     var eventSubscribers: [Subscriber] { get }
     
     func publish<EventType: DomainEvent>(event: EventType) async throws
