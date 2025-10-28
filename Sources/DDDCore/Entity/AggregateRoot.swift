@@ -8,7 +8,7 @@ public protocol AggregateRoot: Projectable, Entity{
 
     init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) throws
 
-    func add(domainEvent: some DomainEvent) throws
+    mutating func add(domainEvent: some DomainEvent) throws
     func when(happened event: some DomainEvent) throws
     func ensureInvariant() throws
 }
@@ -41,7 +41,7 @@ extension AggregateRoot {
         }
     }
 
-    public func apply(event: some DomainEvent) throws {
+    public mutating func apply(event: some DomainEvent) throws {
         let deleted = metadata.deleted
         guard !deleted else {
             throw DDDError.operationNotAllow(operation: "apply", reason: "the aggregate root `\(Self.self)(\(id))` is deleted.", userInfos: ["event": event, "aggregateRootType": "\(Self.self)", "aggregateRootId": id])
@@ -52,7 +52,7 @@ extension AggregateRoot {
         try add(domainEvent: event)
     }
 
-    public func apply(events: [any DomainEvent]) throws {
+    public mutating func apply(events: [any DomainEvent]) throws {
         for event in events {
             try apply(event: event)
         }

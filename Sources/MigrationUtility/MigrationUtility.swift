@@ -40,7 +40,7 @@ extension Migration {
             return nil
         }
         
-        guard let aggregateRoot = try await initAggregateRoot(recorded: createdRecordedEvent) else {
+        guard var aggregateRoot = try await initAggregateRoot(recorded: createdRecordedEvent) else {
             return nil
         }
         
