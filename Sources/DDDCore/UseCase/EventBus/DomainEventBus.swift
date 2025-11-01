@@ -10,7 +10,7 @@ public protocol DomainEventBus: Actor {
 
 extension DomainEventBus {
     public func postAllEvent(fromAggregateRoot aggregateRoot: some AggregateRoot) async throws {
-        for event in aggregateRoot.events {
+        for event in await aggregateRoot.events {
             try await publish(event: event)
         }
     }

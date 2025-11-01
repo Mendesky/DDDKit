@@ -32,15 +32,15 @@ extension EventSourcingRepository {
         } as? AggregateRootType.DeletedEventType
 
         //濾掉 AggregateRootType 是 AggregateRootType.DeletedEventType 的 Event
-        var aggregateRoot = try await AggregateRootType(events: events.filter{ !($0 is AggregateRootType.DeletedEventType) })
+        let aggregateRoot = try await AggregateRootType(events: events.filter{ !($0 is AggregateRootType.DeletedEventType) })
 
         if let deletedEvent {
-            try aggregateRoot?.apply(event: deletedEvent)
+            try await aggregateRoot?.apply(event: deletedEvent)
         }
         
-        aggregateRoot?.update(version: fetchEventsResult.latestRevision)
+        await aggregateRoot?.update(version: fetchEventsResult.latestRevision)
 
-        try aggregateRoot?.clearAllDomainEvents()
+        try await aggregateRoot?.clearAllDomainEvents()
 
         return aggregateRoot
     }
@@ -48,8 +48,8 @@ extension EventSourcingRepository {
     public func save(aggregateRoot: inout AggregateRootType, external: [String:String]?) async throws {
         let latestRevision: UInt64? = try await coordinator.append(events: aggregateRoot.events, byId: aggregateRoot.id, version: aggregateRoot.version, external: external)
         if let latestRevision {
-            aggregateRoot.update(version: latestRevision)
+            await aggregateRoot.update(version: latestRevision)
         }
-        try aggregateRoot.clearAllDomainEvents()
+        try await aggregateRoot.clearAllDomainEvents()
     }
 }

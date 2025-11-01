@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol Entity: ~Copyable, Sendable {
+public protocol Entity: Actor, Sendable {
     associatedtype ID: Hashable, Sendable
     
     var id: ID { get }
