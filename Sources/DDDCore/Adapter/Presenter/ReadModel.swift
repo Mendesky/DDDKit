@@ -3,7 +3,6 @@ public protocol ReadModel: Projectable, Codable {
     associatedtype CreatedEventType: DomainEvent
 
     init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) throws
-    func when(happened event: some DomainEvent) throws
 }
 
 extension ReadModel {
@@ -17,11 +16,11 @@ extension ReadModel {
         try self.init(first: createdEvent, other: events)
     }
 
-    public func restore(event: some DomainEvent) throws {
+    public mutating func restore(event: some DomainEvent) throws {
         try when(happened: event)
     }
 
-    public func restore(events: [any DomainEvent]) throws {
+    public mutating func restore(events: [any DomainEvent]) throws {
         for event in events {
             try restore(event: event)
         }
