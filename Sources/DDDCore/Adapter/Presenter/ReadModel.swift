@@ -16,11 +16,11 @@ extension ReadModel {
         try self.init(first: createdEvent, other: events)
     }
 
-    public mutating func restore(event: some DomainEvent) throws {
+    public func restore(event: some DomainEvent) throws {
         try when(happened: event)
     }
 
-    public mutating func restore(events: [any DomainEvent]) throws {
+    public func restore(events: [any DomainEvent]) throws {
         for event in events {
             try restore(event: event)
         }
