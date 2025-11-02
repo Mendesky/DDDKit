@@ -1,11 +1,25 @@
 @available(*, deprecated, message: "Using EvnetSourcingPresenter.ReadModel insteads.")
-public protocol ReadModel: Projectable, Codable {
+public protocol ReadModel: Codable, Sendable {
+    associatedtype ID: Hashable & Sendable
     associatedtype CreatedEventType: DomainEvent
-
+    
+    static var category: String { get }
+    
+    var id: ID { get }
+    init?(events: [any DomainEvent]) async throws
     init?(first createdEvent: CreatedEventType, other events: [any DomainEvent]) throws
+    func when(happened event: some DomainEvent) throws
 }
 
 extension ReadModel {
+    
+    public static var category: String {
+        "\(Self.self)"
+    }
+
+    public static func getStreamName(id: ID) -> String {
+        "\(category)-\(id)"
+    }
 
     public init?(events: [any DomainEvent]) throws {
         var events = events
