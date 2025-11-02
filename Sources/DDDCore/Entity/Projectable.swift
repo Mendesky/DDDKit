@@ -1,4 +1,4 @@
-public protocol Projectable: Actor {
+public protocol Projectable: Sendable {
 
     associatedtype ID: Hashable & Sendable
     

@@ -11,8 +11,8 @@ import EventSourcing
 
 extension AggregateRoot{
     public static func fromMigrated(createdEvent event: CreatedEventType) async throws -> Self? {
-        let aggregateRoot = try await Self.init(events: [event])
-        try await aggregateRoot?.apply(event: event)
+        var aggregateRoot = try await Self.init(events: [event])
+        try aggregateRoot?.apply(event: event)
         return aggregateRoot
     }
 }

@@ -7,7 +7,7 @@ public protocol EventSourcingRepository<StorageCoordinator>: Repository {
     var coordinator: StorageCoordinator { get }
     
     func find(byId id: AggregateRootType.ID) async throws -> AggregateRootType?
-    func save(aggregateRoot: AggregateRootType, external: [String:String]?) async throws
+    func save(aggregateRoot: inout AggregateRootType, external: [String:String]?) async throws
 }
 
 extension EventSourcingRepository {
@@ -32,24 +32,24 @@ extension EventSourcingRepository {
         } as? AggregateRootType.DeletedEventType
 
         //濾掉 AggregateRootType 是 AggregateRootType.DeletedEventType 的 Event
-        let aggregateRoot = try await AggregateRootType(events: events.filter{ !($0 is AggregateRootType.DeletedEventType) })
+        var aggregateRoot = try await AggregateRootType(events: events.filter{ !($0 is AggregateRootType.DeletedEventType) })
 
         if let deletedEvent {
-            try await aggregateRoot?.apply(event: deletedEvent)
+            try aggregateRoot?.apply(event: deletedEvent)
         }
         
-        await aggregateRoot?.update(version: fetchEventsResult.latestRevision)
+        aggregateRoot?.update(version: fetchEventsResult.latestRevision)
 
-        try await aggregateRoot?.clearAllDomainEvents()
+        try aggregateRoot?.clearAllDomainEvents()
 
         return aggregateRoot
     }
 
-    public func save(aggregateRoot: AggregateRootType, external: [String:String]?) async throws {
+    public func save(aggregateRoot: inout AggregateRootType, external: [String:String]?) async throws {
         let latestRevision: UInt64? = try await coordinator.append(events: aggregateRoot.events, byId: aggregateRoot.id, version: aggregateRoot.version, external: external)
         if let latestRevision {
-            await aggregateRoot.update(version: latestRevision)
+            aggregateRoot.update(version: latestRevision)
         }
-        try await aggregateRoot.clearAllDomainEvents()
+        try aggregateRoot.clearAllDomainEvents()
     }
 }
