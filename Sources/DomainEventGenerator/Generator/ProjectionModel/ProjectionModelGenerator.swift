@@ -34,19 +34,17 @@ package struct ProjectionModelGenerator {
 
         let yamlDecoder = YAMLDecoder()
         var definitions: [String: EventProjectionDefinition]
-        var aggregateEventsDefinitions: EventDefinitionCollection
         do{
             if yamlData.isEmpty {
                 throw DomainEventGeneratorError.invalidYamlFile(url: projectionModelYamlFileURL, reason: "The yaml file is empty.")
             }
             
             definitions = try yamlDecoder.decode([String: EventProjectionDefinition].self, from: yamlData)
-            let aggregateEventsData = try Data(contentsOf: aggregateEventsYamlFileURL)
-            aggregateEventsDefinitions = try yamlDecoder.decode(EventDefinitionCollection.self, from: aggregateEventsData)
         }catch{
             definitions = [:]
-            aggregateEventsDefinitions = .init(events: [])
         }
+        let aggregateEventsData = try Data(contentsOf: aggregateEventsYamlFileURL)
+        let aggregateEventsDefinitions = try yamlDecoder.decode(EventDefinitionCollection.self, from: aggregateEventsData)
         try self.init(definitions: definitions, aggregateRootName: aggregateRootName, aggregateEvents: aggregateEventsDefinitions)
     }
     
