@@ -80,4 +80,9 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
             throw error
         }
     }
+    
+    public func purge(byId id: ProjectableType.ID) async throws {
+        try await self.client.deleteStream(ProjectableType.getStreamName(id: id))
+    }
+    
 }
