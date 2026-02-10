@@ -2,3 +2,8 @@
 @_exported import ESDBSupport
 @_exported import EventSourcing
 @_exported import JBEventBus
+
+
+struct Presenter: BusinessClientEvidenceInfoReadModelPresenterProtocol{
+    
+}
