@@ -4,6 +4,3 @@
 @_exported import JBEventBus
 
 
-struct Presenter: BusinessClientEvidenceInfoReadModelPresenterProtocol{
-    
-}
