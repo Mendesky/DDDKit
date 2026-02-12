@@ -9,7 +9,7 @@ fileprivate struct EventWrapped: Sendable{
     let revision: UInt64
 }
 
-public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageCoordinator {
+public class KurrentStorageCoordinator<ProjectableType: Projectable>: EventStorageCoordinator {
     let logger = Logger(label: "ESDBStorageCoordinator")
     let eventMapper: any EventTypeMapper
     let client: KurrentDBClient
