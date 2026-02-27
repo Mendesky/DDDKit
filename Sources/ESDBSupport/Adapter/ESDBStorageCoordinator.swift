@@ -23,12 +23,9 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
             let encoder = JSONEncoder()
             return try EventData(id: $0.id, eventType: $0.eventType, model: $0, customMetadata: encoder.encode(customMetadata))
         }
-        let response = try await client.appendToStream(.init(name: streamName), events: events){ options in
-            guard let version else {
-                return options.revision(expected: .any)
-            }
-            
-            return options.revision(expected: .at(UInt64(version)))
+        let stream = client.streams(specified: streamName)
+        let response = try await stream.append(events: events){
+            $0.expectedRevision = version.map{ .at(UInt64($0)) } ?? .any
         }
 
         return response.currentRevision.flatMap {
@@ -40,9 +37,11 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
         
         let streamName = ProjectableType.getStreamName(id: id)
         do{
-            let responses = try await client.readStream(.init(name: streamName)){
-                    $0.startFrom(revision: .start)
-                      .resolveLinks()
+            let stream = client.streams(specified: streamName)
+            let responses = try await stream.read(){
+                $0.direction = .forward
+                $0.revision = .start
+                $0.resolveLinks = true
             }
 
             let eventWrappers: [(event: any DomainEvent, revision: UInt64)] = try await responses.reduce(into: .init()) {
@@ -77,7 +76,8 @@ public class ESDBStorageCoordinator<ProjectableType: Projectable>: EventStorageC
     }
     
     public func purge(byId id: ProjectableType.ID) async throws {
-        try await self.client.deleteStream(ProjectableType.getStreamName(id: id))
+        let streamName = ProjectableType.getStreamName(id: id)
+        try await self.client.streams(specified: streamName).delete()
     }
     
 }
